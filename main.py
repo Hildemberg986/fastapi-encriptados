@@ -22,7 +22,7 @@ app = FastAPI()
 # Configuração do CORS (Cross-Origin Resource Sharing)
 origins = [
     "https://encriptados.netlify.app",
-    "https://encriptados.netlify.app/loja",
+    "https://encriptados.netlify.app/loja", "*",
 ]
 
 # Adicionar middleware para configurar o CORS
@@ -37,19 +37,24 @@ app.add_middleware(
 # Configurações de segurança e autenticação JWT
 SECRET_KEY = "your-secret-key"  # Chave secreta para assinar o token JWT
 ALGORITHM = "HS256"  # Algoritmo de criptografia usado para assinar o token JWT
-ACCESS_TOKEN_EXPIRE_MINUTES = 30  # Tempo de expiração do token de acesso em minutos
+# Tempo de expiração do token de acesso em minutos
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 # Configuração do esquema de autenticação OAuth2
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # Função para verificar se o token JWT fornecido é válido
+
+
 def is_token_valid(authorization: str = Header(None)):
     if authorization is None:
-        raise HTTPException(status_code=401, detail="Authorization header is missing")
+        raise HTTPException(
+            status_code=401, detail="Authorization header is missing")
 
     parts = authorization.split()
     if len(parts) != 2 or parts[0].lower() != "bearer":
-        raise HTTPException(status_code=401, detail="Invalid authorization header")
+        raise HTTPException(
+            status_code=401, detail="Invalid authorization header")
 
     token = parts[1]
     try:
@@ -60,12 +65,15 @@ def is_token_valid(authorization: str = Header(None)):
         raise HTTPException(status_code=401, detail="Invalid token")
 
 # Definição do modelo de item
+
+
 class Item(BaseModel):
     nome: str
     valor: str
     descricao: str
     imagem: str
     link: str
+
 
 # Chaves de acesso do RestDB
 RESTDB_TOKEN = getenv("TOKENDB")
@@ -76,6 +84,8 @@ headers = {
 }
 
 # Rota para home (somente para administradores)
+
+
 @app.get('/')
 def home(authorization: str = Header(None)):
     """
@@ -91,6 +101,8 @@ def home(authorization: str = Header(None)):
     return {"data": r.json()}
 
 # Rota para criar item (somente para administradores)
+
+
 @app.post("/items/")
 async def create_item(item: Item, authorization: str = Header(None)):
     """
@@ -107,6 +119,8 @@ async def create_item(item: Item, authorization: str = Header(None)):
     return r.json()
 
 # Rota para deletar item (somente para administradores)
+
+
 @app.delete("/items/{item_id}")
 async def delete_item(item_id: str, authorization: str = Header(None)):
     """
@@ -123,6 +137,8 @@ async def delete_item(item_id: str, authorization: str = Header(None)):
     return r.json()
 
 # Rota para atualizar item (somente para administradores)
+
+
 @app.put("/items/{item_id}")
 async def update_item(item_id: str, item: Item, authorization: str = Header(None)):
     """
@@ -140,6 +156,8 @@ async def update_item(item_id: str, item: Item, authorization: str = Header(None
     return r.json()
 
 # Rota para autenticar usuário e gerar token JWT
+
+
 @app.post("/token")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     """
@@ -147,8 +165,10 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     """
     user = form_data.username
     password = form_data.password
-    if user == usernameEnv and password == passwordEnv:  # Verificação de credenciais (substitua por sua lógica de autenticação)
+    # Verificação de credenciais (substitua por sua lógica de autenticação)
+    if user == usernameEnv and password == passwordEnv:
         token = jwt.encode({"sub": user}, SECRET_KEY, algorithm=ALGORITHM)
         return {"access_token": token, "token_type": "bearer"}
     else:
-        raise HTTPException(status_code=401, detail="Incorrect username or password")
+        raise HTTPException(
+            status_code=401, detail="Incorrect username or password")
