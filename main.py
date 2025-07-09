@@ -152,7 +152,3 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
         return {"access_token": token, "token_type": "bearer"}
     else:
         raise HTTPException(status_code=401, detail="Incorrect username or password")
-
-# Iniciar o servidor de desenvolvimento usando Uvicorn
-if __name__ == "__main__":
-    uvicorn.run(app)
