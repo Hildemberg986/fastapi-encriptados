@@ -87,16 +87,7 @@ headers = {
 
 
 @app.get('/')
-def home(authorization: str = Header(None)):
-    """
-    Rota para obter todos os itens da loja.
-    Requer um token JWT de autenticação no cabeçalho Authorization.
-    """
-    try:
-        is_token_valid(authorization)
-    except HTTPException as e:
-        return e
-
+def home():
     r = requests.get(url, headers=headers)
     return {"data": r.json()}
 
