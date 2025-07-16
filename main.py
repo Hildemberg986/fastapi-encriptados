@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, OAuth2PasswordRequestForm
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 from typing import Optional
@@ -9,10 +9,10 @@ import requests
 from dotenv import load_dotenv
 from os import getenv
 
-# Carrega variáveis de ambiente
+# Carrega .env
 load_dotenv()
 
-# Configurações
+# Configs
 SECRET_KEY = "sua_chave_secreta"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -23,32 +23,32 @@ passwordEnv = getenv("VAR-PASSWORD")
 RESTDB_TOKEN = getenv("TOKENDB")
 URLDB = getenv("URLDB")
 
-# App FastAPI com título e descrição
+# FastAPI app
 app = FastAPI(
     title="API Encriptados - Loja",
-    description="API com autenticação JWT usando access token (Bearer). Use o botão 'Authorize' com seu access_token para acessar rotas protegidas.",
+    description="Use 'Authorize' com seu access_token para acessar rotas protegidas.",
     version="1.0.0"
 )
 
-# CORS liberado (ajuste se quiser restringir)
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Ajusta conforme necessário
+    allow_origins=["*"],  # Ajuste se quiser restringir
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Novo esquema de autenticação via Bearer
+# Segurança (Bearer Token)
 bearer_scheme = HTTPBearer()
 
-# Headers do RestDB
+# Headers RestDB
 headers = {
     "content-type": "application/json",
     "x-apikey": RESTDB_TOKEN
 }
 
-# Modelos
+# MODELS
 class Item(BaseModel):
     nome: str
     valor: str
@@ -65,14 +65,17 @@ class AccessTokenOnly(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
-# Função para gerar tokens
+class LoginInput(BaseModel):
+    username: str
+    password: str
+
+# UTILS
 def create_token(data: dict, expires_delta: timedelta) -> str:
     to_encode = data.copy()
     expire = datetime.utcnow() + expires_delta
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-# Validação do access_token via Bearer
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
     token = credentials.credentials
     try:
@@ -83,28 +86,28 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(bearer_
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Token inválido")
 
-# Rota pública
+# ROTAS
+
 @app.get("/", tags=["Público"])
 def public_home():
     """Rota pública que retorna os itens da loja"""
     r = requests.get(URLDB, headers=headers)
     return {"data": r.json()}
 
-# Rota de login para gerar tokens
 @app.post("/auth/login", response_model=TokenResponse, tags=["Autenticação"])
-def login(form_data: OAuth2PasswordRequestForm = Depends()):
+def login(data: LoginInput):
     """
-    Autentica o usuário e retorna access e refresh tokens.
+    Autentica e retorna access + refresh tokens.
     """
-    if form_data.username != usernameEnv or form_data.password != passwordEnv:
+    if data.username != usernameEnv or data.password != passwordEnv:
         raise HTTPException(status_code=401, detail="Credenciais inválidas")
 
     access_token = create_token(
-        {"sub": form_data.username},
+        {"sub": data.username},
         timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
     refresh_token = create_token(
-        {"sub": form_data.username, "type": "refresh"},
+        {"sub": data.username, "type": "refresh"},
         timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
     )
     return {
@@ -113,7 +116,6 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
         "token_type": "bearer"
     }
 
-# Rota para refresh
 @app.post("/auth/refresh", response_model=AccessTokenOnly, tags=["Autenticação"])
 def refresh_token(authorization: Optional[str] = Header(None)):
     """
@@ -126,7 +128,7 @@ def refresh_token(authorization: Optional[str] = Header(None)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         if payload.get("type") != "refresh":
-            raise HTTPException(status_code=401, detail="Não é um refresh token válido")
+            raise HTTPException(status_code=401, detail="Não é um refresh token")
         new_access = create_token(
             {"sub": payload["sub"]},
             timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -137,24 +139,22 @@ def refresh_token(authorization: Optional[str] = Header(None)):
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Refresh token inválido")
 
-# CRUD protegido
-
 @app.post("/items", tags=["Itens"], dependencies=[Depends(get_current_user)])
 def create_item(item: Item):
-    """Cria um novo item (requer token)"""
+    """Cria um novo item (requer token Bearer)"""
     r = requests.post(URLDB, json=item.dict(), headers=headers)
     return r.json()
 
 @app.put("/items/{item_id}", tags=["Itens"], dependencies=[Depends(get_current_user)])
 def update_item(item_id: str, item: Item):
-    """Atualiza um item (requer token)"""
+    """Atualiza um item (requer token Bearer)"""
     update_url = f"{URLDB}/{item_id}"
     r = requests.put(update_url, json=item.dict(), headers=headers)
     return r.json()
 
 @app.delete("/items/{item_id}", tags=["Itens"], dependencies=[Depends(get_current_user)])
 def delete_item(item_id: str):
-    """Remove um item (requer token)"""
+    """Remove um item da loja (requer token Bearer)"""
     delete_url = f"{URLDB}/{item_id}"
     r = requests.delete(delete_url, headers=headers)
     return r.json()
