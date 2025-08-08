@@ -158,31 +158,3 @@ def delete_item(item_id: str):
     delete_url = f"{URLDB}/{item_id}"
     r = requests.delete(delete_url, headers=headers)
     return r.json()
-@app.get("/teste/me")
-async def me():
-    return {
-    "allianceId": 35027,
-    "allianceRole": "member",
-    "charges": {
-        "cooldownMs": 100,
-        "count": 7.546366666666672,
-        "max": 91
-    },
-    "country": "BR",
-    "discord": "",
-    "droplets": 104,
-    "email": "hildembergeling@gmail.com",
-    "equippedFlag": 0,
-    "extraColorsBitmap": 0,
-    "favoriteLocations": [],
-    "flagsBitmap": "AA==",
-    "id": 815823,
-    "isCustomer": False,
-    "level": 8.039554807344285,
-    "maxFavoriteLocations": 15,
-    "name": "SharpPlate",
-    "needsPhoneVerification": False,
-    "picture": "",
-    "pixelsPainted": 604,
-    "showLastPixel": True
-}
