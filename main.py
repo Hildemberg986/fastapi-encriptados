@@ -177,12 +177,12 @@ async def me():
     "favoriteLocations": [],
     "flagsBitmap": "AA==",
     "id": 815823,
-    "isCustomer": false,
+    "isCustomer": False,
     "level": 8.039554807344285,
     "maxFavoriteLocations": 15,
     "name": "SharpPlate",
-    "needsPhoneVerification": false,
+    "needsPhoneVerification": False,
     "picture": "",
     "pixelsPainted": 604,
-    "showLastPixel": true
+    "showLastPixel": True
 }
