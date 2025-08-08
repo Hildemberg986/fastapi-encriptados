@@ -161,28 +161,28 @@ def delete_item(item_id: str):
 @app.get("/teste/me")
 async def me():
     return {
-        "allianceId": 35027,
-        "allianceRole": "member",
-        "charges": {
-            "cooldownMs": 1000,  # aqui você controla o cooldown
-            "count": 39.64,
-            "max": 79
-        },
-        "country": "BR",
-        "discord": "",
-        "droplets": 475,
-        "email": "hildembergeling@gmail.com",
-        "equippedFlag": 0,
-        "extraColorsBitmap": 0,
-        "favoriteLocations": [],
-        "flagsBitmap": "AA==",
-        "id": 815823,
-        "isCustomer": False,
-        "level": 7.021,
-        "maxFavoriteLocations": 15,
-        "name": "SharpPlate",
-        "needsPhoneVerification": False,
-        "picture": "",
-        "pixelsPainted": 475,
-        "showLastPixel": True
-    }
+    "allianceId": 35027,
+    "allianceRole": "member",
+    "charges": {
+        "cooldownMs": 100,
+        "count": 7.546366666666672,
+        "max": 91
+    },
+    "country": "BR",
+    "discord": "",
+    "droplets": 104,
+    "email": "hildembergeling@gmail.com",
+    "equippedFlag": 0,
+    "extraColorsBitmap": 0,
+    "favoriteLocations": [],
+    "flagsBitmap": "AA==",
+    "id": 815823,
+    "isCustomer": false,
+    "level": 8.039554807344285,
+    "maxFavoriteLocations": 15,
+    "name": "SharpPlate",
+    "needsPhoneVerification": false,
+    "picture": "",
+    "pixelsPainted": 604,
+    "showLastPixel": true
+}
